@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}注册 - 缘来如此{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-heart text-pink fa-3x mb-3"></i>
+                        <h3 class="fw-bold">加入缘来如此</h3>
+                        <p class="text-muted">开始你的交友之旅</p>
+                    </div>
+                    <form method="POST">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                                <input type="text" name="username" class="form-control" required placeholder="英文/数字，唯一标识">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">昵称</label>
+                                <input type="text" name="nickname" class="form-control" placeholder="你希望别人怎么称呼你">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">邮箱 <span class="text-danger">*</span></label>
+                                <input type="email" name="email" class="form-control" required placeholder="your@email.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">密码 <span class="text-danger">*</span></label>
+                                <input type="password" name="password" class="form-control" required placeholder="至少6位">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">确认密码 <span class="text-danger">*</span></label>
+                                <input type="password" name="confirm" class="form-control" required placeholder="再次输入密码">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">性别</label>
+                                <select name="gender" class="form-select">
+                                    <option value="保密">保密</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">年龄</label>
+                                <input type="number" name="age" class="form-control" value="20" min="16" max="99">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">国家</label>
+                                <input type="text" name="country" class="form-control" value="中国">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">省份</label>
+                                <input type="text" name="province" class="form-control" placeholder="如：广东省">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">城市</label>
+                                <input type="text" name="city" class="form-control" placeholder="如：深圳">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-pink w-100 btn-lg mt-4">
+                            <i class="fas fa-user-plus me-2"></i>立即注册
+                        </button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <p class="mb-0">已有账号？
+                            <a href="{{ url_for('auth.login') }}" class="text-pink fw-bold">直接登录</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

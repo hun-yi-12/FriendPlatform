@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}与 {{ other.nickname or other.username }} 聊天{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row" style="height:75vh">
+        <!-- 联系人列表 -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header fw-bold bg-transparent">联系人</div>
+                <div class="card-body p-0 overflow-auto">
+                    {% for contact in contacts %}
+                    <a href="{{ url_for('chat.chat_with', user_id=contact.id) }}"
+                       class="d-flex align-items-center p-2 text-decoration-none border-bottom hover-bg {{ 'bg-light' if contact.id == other.id }}">
+                        <img src="{{ url_for('static', filename='img/avatars/' + (contact.avatar or 'default.png')) }}"
+                             class="rounded-circle me-2" width="36" height="36"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        <span class="text-dark small fw-bold">{{ contact.nickname or contact.username }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 聊天区域 -->
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm h-100 d-flex flex-column">
+                <!-- 聊天头部 -->
+                <div class="card-header d-flex align-items-center gap-2 bg-gradient-primary text-white py-2">
+                    <img src="{{ url_for('static', filename='img/avatars/' + (other.avatar or 'default.png')) }}"
+                         class="rounded-circle" width="36" height="36"
+                         onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                    <div>
+                        <div class="fw-bold">{{ other.nickname or other.username }}</div>
+                        <small class="opacity-75">{{ '在线' if other.online else '离线' }}</small>
+                    </div>
+                    <a href="{{ url_for('user.profile', user_id=other.id) }}" class="btn btn-sm btn-light ms-auto">
+                        查看主页
+                    </a>
+                </div>
+
+                <!-- 消息列表 -->
+                <div class="card-body flex-grow-1 overflow-auto p-3" id="messageList">
+                    {% for msg in messages %}
+                    <div class="d-flex mb-3 {{ 'justify-content-end' if msg.sender_id == current_user.id else 'justify-content-start' }}">
+                        {% if msg.sender_id != current_user.id %}
+                        <img src="{{ url_for('static', filename='img/avatars/' + (other.avatar or 'default.png')) }}"
+                             class="rounded-circle me-2 align-self-end" width="30" height="30"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        {% endif %}
+                        <div>
+                            <div class="message-bubble {{ 'sent' if msg.sender_id == current_user.id else 'received' }}">
+                                {{ msg.content }}
+                            </div>
+                            <div class="text-muted text-{{ 'end' if msg.sender_id == current_user.id else 'start' }}"
+                                 style="font-size:0.7em">{{ msg.created_at.strftime('%H:%M') }}</div>
+                        </div>
+                        {% if msg.sender_id == current_user.id %}
+                        <img src="{{ url_for('static', filename='img/avatars/' + (current_user.avatar or 'default.png')) }}"
+                             class="rounded-circle ms-2 align-self-end" width="30" height="30"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- 输入区 -->
+                <div class="card-footer bg-transparent">
+                    <div class="input-group">
+                        <input type="text" id="msgInput" class="form-control" placeholder="输入消息..."
+                               onkeypress="if(event.key==='Enter') sendMsg()">
+                        <button class="btn btn-primary" onclick="sendMsg()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const socket = io();
+const room = 'chat_{{ [current_user.id, other.id]|sort|join("_") }}';
+socket.emit('join', {room: room});
+
+socket.on('new_message', function(data) {
+    if (data.sender_id != {{ current_user.id }}) {
+        appendMessage(data.content, data.created_at, false, data.sender_avatar);
+    }
+});
+
+function appendMessage(content, time, isSent, avatar) {
+    const list = document.getElementById('messageList');
+    const div = document.createElement('div');
+    div.className = `d-flex mb-3 ${isSent ? 'justify-content-end' : 'justify-content-start'}`;
+    const avatarSrc = avatar ? `/static/img/avatars/${avatar}` : '/static/img/default.png';
+    div.innerHTML = isSent ? `
+        <div>
+            <div class="message-bubble sent">${content}</div>
+            <div class="text-muted text-end" style="font-size:0.7em">${time}</div>
+        </div>
+        <img src="${avatarSrc}" class="rounded-circle ms-2 align-self-end" width="30" height="30" onerror="this.src='/static/img/default.png'">
+    ` : `
+        <img src="${avatarSrc}" class="rounded-circle me-2 align-self-end" width="30" height="30" onerror="this.src='/static/img/default.png'">
+        <div>
+            <div class="message-bubble received">${content}</div>
+            <div class="text-muted text-start" style="font-size:0.7em">${time}</div>
+        </div>
+    `;
+    list.appendChild(div);
+    list.scrollTop = list.scrollHeight;
+}
+
+function sendMsg() {
+    const input = document.getElementById('msgInput');
+    const content = input.value.trim();
+    if (!content) return;
+    socket.emit('send_message', {
+        room: room,
+        content: content,
+        receiver_id: {{ other.id }}
+    });
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    appendMessage(content, time, true, '{{ current_user.avatar or "default.png" }}');
+    input.value = '';
+}
+
+// 滚动到底部
+const msgList = document.getElementById('messageList');
+msgList.scrollTop = msgList.scrollHeight;
+</script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.nickname or user.username }} - 个人主页{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- 左侧个人信息 -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="position-relative d-inline-block mb-3">
+                        <img src="{{ url_for('static', filename='img/avatars/' + (user.avatar or 'default.png')) }}"
+                             class="rounded-circle border border-3 border-pink" width="120" height="120"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        {% if user.online %}
+                        <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white"
+                              style="width:20px;height:20px" title="在线"></span>
+                        {% endif %}
+                    </div>
+                    <h4 class="fw-bold">{{ user.nickname or user.username }}</h4>
+                    <p class="text-muted mb-1">@{{ user.username }}</p>
+                    <div class="mb-3">
+                        <span class="badge bg-light text-dark border me-1">{{ user.gender }}</span>
+                        <span class="badge bg-light text-dark border me-1">{{ user.age or '?' }}岁</span>
+                        {% if user.city %}
+                        <span class="badge bg-light text-dark border">
+                            <i class="fas fa-map-marker-alt text-primary me-1"></i>{{ user.city }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if user.bio %}
+                    <p class="text-muted small">{{ user.bio }}</p>
+                    {% endif %}
+
+                    <!-- 操作按钮 -->
+                    {% if current_user.is_authenticated and current_user.id != user.id %}
+                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{{ url_for('chat.chat_with', user_id=user.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-comment me-1"></i>发消息
+                        </a>
+                        {% if is_friend %}
+                        <form method="POST" action="{{ url_for('friend.remove_friend', user_id=user.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-user-minus me-1"></i>删除好友
+                            </button>
+                        </form>
+                        {% elif pending_request %}
+                        <button class="btn btn-secondary btn-sm" disabled>
+                            <i class="fas fa-clock me-1"></i>等待确认
+                        </button>
+                        {% else %}
+                        <button class="btn btn-pink btn-sm" data-bs-toggle="modal" data-bs-target="#addFriendModal">
+                            <i class="fas fa-user-plus me-1"></i>加好友
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% elif current_user.is_authenticated and current_user.id == user.id %}
+                    <a href="{{ url_for('user.edit_profile') }}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-edit me-1"></i>编辑资料
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 详细信息 -->
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header fw-bold bg-transparent">基本信息</div>
+                <div class="card-body small">
+                    <div class="row g-2">
+                        {% if user.province %}
+                        <div class="col-6"><span class="text-muted">省份：</span>{{ user.province }}</div>
+                        {% endif %}
+                        {% if user.country %}
+                        <div class="col-6"><span class="text-muted">国家：</span>{{ user.country }}</div>
+                        {% endif %}
+                        {% if user.habit_sleep %}
+                        <div class="col-6"><span class="text-muted">作息：</span>{{ user.habit_sleep }}</div>
+                        {% endif %}
+                        {% if user.habit_diet %}
+                        <div class="col-6"><span class="text-muted">饮食：</span>{{ user.habit_diet }}</div>
+                        {% endif %}
+                        {% if user.habit_exercise %}
+                        <div class="col-6"><span class="text-muted">运动：</span>{{ user.habit_exercise }}</div>
+                        {% endif %}
+                        {% if user.relationship_goal %}
+                        <div class="col-12"><span class="text-muted">交友目标：</span>
+                            <span class="badge bg-pink-light text-pink">{{ user.relationship_goal }}</span>
+                        </div>
+                        {% endif %}
+                        {% if user.life_goal %}
+                        <div class="col-12"><span class="text-muted">人生目标：</span>{{ user.life_goal }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if user.hobbies %}
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header fw-bold bg-transparent">兴趣爱好</div>
+                <div class="card-body">
+                    {% for h in user.hobbies %}
+                    <span class="badge bg-light text-dark border me-1 mb-1">{{ h.icon }} {{ h.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 好友列表 -->
+            {% if user.friends %}
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header fw-bold bg-transparent">好友 ({{ user.friends|length }})</div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for f in user.friends[:9] %}
+                        <a href="{{ url_for('user.profile', user_id=f.id) }}" title="{{ f.nickname or f.username }}">
+                            <img src="{{ url_for('static', filename='img/avatars/' + (f.avatar or 'default.png')) }}"
+                                 class="rounded-circle" width="40" height="40"
+                                 onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 右侧动态 -->
+        <div class="col-lg-8">
+            {% if current_user.is_authenticated and current_user.id == user.id %}
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('user.new_post') }}">
+                        <input type="hidden" name="post_type" value="normal">
+                        <div class="d-flex align-items-start gap-2">
+                            <img src="{{ url_for('static', filename='img/avatars/' + (current_user.avatar or 'default.png')) }}"
+                                 class="rounded-circle" width="40" height="40"
+                                 onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                            <div class="flex-grow-1">
+                                <textarea name="content" class="form-control border-0 bg-light" rows="2"
+                                          placeholder="分享你的心情..."></textarea>
+                                <div class="d-flex justify-content-between mt-2 align-items-center">
+                                    <small class="text-muted">公开动态</small>
+                                    <button type="submit" class="btn btn-primary btn-sm">发布</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if posts %}
+            {% for post in posts %}
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ url_for('static', filename='img/avatars/' + (user.avatar or 'default.png')) }}"
+                             class="rounded-circle me-2" width="36" height="36"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        <div>
+                            <span class="fw-bold small">{{ user.nickname or user.username }}</span>
+                            <div class="text-muted" style="font-size:0.75em">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                    </div>
+                    <p class="mb-0">{{ post.content }}</p>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                <p>暂无动态</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 添加好友 Modal -->
+<div class="modal fade" id="addFriendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">发送好友请求</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('friend.send_request', user_id=user.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">留言（可选）</label>
+                        <textarea name="message" class="form-control" rows="2"
+                                  placeholder="打个招呼吧～"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-pink btn-sm">发送请求</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

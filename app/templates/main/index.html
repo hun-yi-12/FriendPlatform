@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}首页 - 缘来如此{% endblock %}
+{% block content %}
+
+<!-- Hero Banner -->
+<section class="hero-section text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">缘来如此</h1>
+                <p class="lead mb-4">同城、全国、全球三大交友圈<br>根据爱好、习惯、目标精准匹配<br>还有专属心事广场，倾诉心声</p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-pink btn-lg me-3">
+                    <i class="fas fa-heart me-2"></i>立即加入
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">登录</a>
+                {% else %}
+                <a href="{{ url_for('main.explore') }}" class="btn btn-pink btn-lg me-3">
+                    <i class="fas fa-search me-2"></i>探索交友
+                </a>
+                <a href="{{ url_for('user.match') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-magic me-2"></i>智能匹配
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <div class="hero-stats">
+                    <div class="stat-circle">
+                        <span class="display-5 fw-bold">{{ total_users }}</span>
+                        <small>注册用户</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 三大交友范围 -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4 section-title">选择你的交友范围</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-primary-light rounded-circle mx-auto mb-3">
+                            <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                        </div>
+                        <h4>同城交友</h4>
+                        <p class="text-muted">发现身边的有趣灵魂，约一起探索这座城市</p>
+                        <a href="{{ url_for('main.explore', scope='city') }}" class="btn btn-primary btn-sm">
+                            探索同城 <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-success-light rounded-circle mx-auto mb-3">
+                            <i class="fas fa-flag fa-2x text-success"></i>
+                        </div>
+                        <h4>全国交友</h4>
+                        <p class="text-muted">跨越城市的距离，结识全国各地的朋友</p>
+                        <a href="{{ url_for('main.explore', scope='national') }}" class="btn btn-success btn-sm">
+                            探索全国 <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="feature-icon bg-info-light rounded-circle mx-auto mb-3">
+                            <i class="fas fa-globe fa-2x text-info"></i>
+                        </div>
+                        <h4>全球交友</h4>
+                        <p class="text-muted">打破国界，与全球各地的人建立联系</p>
+                        <a href="{{ url_for('main.explore', scope='global') }}" class="btn btn-info btn-sm text-white">
+                            探索全球 <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 功能特色 -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4 section-title">平台特色</h2>
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="text-center p-3">
+                    <i class="fas fa-brain fa-2x text-purple mb-2"></i>
+                    <h6>智能匹配</h6>
+                    <small class="text-muted">基于爱好习惯智能推荐</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-3">
+                    <i class="fas fa-comment-dots fa-2x text-pink mb-2"></i>
+                    <h6>心事广场</h6>
+                    <small class="text-muted">匿名倾诉内心秘密</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-3">
+                    <i class="fas fa-comments fa-2x text-primary mb-2"></i>
+                    <h6>实时聊天</h6>
+                    <small class="text-muted">与好友实时沟通交流</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="text-center p-3">
+                    <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                    <h6>安全可靠</h6>
+                    <small class="text-muted">严格审核保护隐私</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 在线用户 -->
+{% if online_users %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title mb-4"><i class="fas fa-circle text-success me-2" style="font-size:0.6em"></i>正在在线</h2>
+        <div class="row g-3">
+            {% for user in online_users %}
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{{ url_for('user.profile', user_id=user.id) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-2 hover-lift">
+                        <div class="position-relative d-inline-block mx-auto">
+                            <img src="{{ url_for('static', filename='img/avatars/' + (user.avatar or 'default.png')) }}"
+                                 class="rounded-circle" width="60" height="60"
+                                 onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-white"
+                                  style="width:12px;height:12px"></span>
+                        </div>
+                        <p class="small fw-bold mt-1 mb-0 text-dark">{{ user.nickname or user.username }}</p>
+                        <p class="text-muted" style="font-size:0.7em">{{ user.city or '未知' }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 最新动态 -->
+{% if recent_posts %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title mb-4">最新动态</h2>
+        <div class="row g-3">
+            {% for post in recent_posts %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100 hover-lift">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="{{ url_for('static', filename='img/avatars/' + (post.author.avatar or 'default.png')) }}"
+                                 class="rounded-circle me-2" width="36" height="36"
+                                 onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                            <div>
+                                <a href="{{ url_for('user.profile', user_id=post.author.id) }}"
+                                   class="fw-bold text-decoration-none text-dark small">
+                                    {{ post.author.nickname or post.author.username }}
+                                </a>
+                                <div class="text-muted" style="font-size:0.75em">
+                                    {{ post.created_at.strftime('%m-%d %H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-0 text-truncate-3">{{ post.content }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 新加入用户 -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title mb-4">新朋友</h2>
+        <div class="row g-3">
+            {% for user in new_users %}
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('user.profile', user_id=user.id) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm text-center p-3 hover-lift">
+                        <img src="{{ url_for('static', filename='img/avatars/' + (user.avatar or 'default.png')) }}"
+                             class="rounded-circle mx-auto mb-2" width="70" height="70"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        <h6 class="mb-0 text-dark">{{ user.nickname or user.username }}</h6>
+                        <small class="text-muted">{{ user.city or '神秘地' }} · {{ user.age or '?' }}岁</small>
+                        <div class="mt-2">
+                            {% for h in user.hobbies[:2] %}
+                            <span class="badge bg-light text-dark border">{{ h.icon }} {{ h.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

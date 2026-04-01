@@ -1,0 +1,12 @@
+instance/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.db
+app/static/img/avatars/*.png
+app/static/img/avatars/*.jpg
+!app/static/img/avatars/default.png
+.DS_Store
+venv/
+env/

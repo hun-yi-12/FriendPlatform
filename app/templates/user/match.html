@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}智能匹配 - 缘来如此{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h3 class="mb-2"><i class="fas fa-magic text-purple me-2"></i>智能匹配</h3>
+    <p class="text-muted mb-4">基于你的爱好、习惯和目标，为你推荐最适合的朋友</p>
+
+    {% if scored %}
+    <div class="row g-3">
+        {% for user, score, common in scored %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <div class="card-body text-center p-3">
+                    <div class="position-relative d-inline-block mb-2">
+                        <img src="{{ url_for('static', filename='img/avatars/' + (user.avatar or 'default.png')) }}"
+                             class="rounded-circle border" width="70" height="70"
+                             onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+                        <span class="position-absolute top-0 end-0 badge bg-warning rounded-pill" style="font-size:0.65em">
+                            {{ score }}分
+                        </span>
+                    </div>
+                    <h6 class="fw-bold mb-0">{{ user.nickname or user.username }}</h6>
+                    <small class="text-muted">{{ user.city or '未知' }} · {{ user.age or '?' }}岁</small>
+                    <div class="my-2">
+                        {% for h in user.hobbies[:3] %}
+                        <span class="badge bg-light text-dark border small">{{ h.icon }} {{ h.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if user.relationship_goal %}
+                    <div class="mb-2">
+                        <span class="badge bg-pink-light text-pink small">{{ user.relationship_goal }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- 匹配进度 -->
+                    <div class="mb-2">
+                        <div class="progress" style="height:4px">
+                            <div class="progress-bar bg-success" style="width:{{ [score, 100]|min }}%"></div>
+                        </div>
+                        <small class="text-muted">契合度 {{ [score, 100]|min }}%</small>
+                    </div>
+
+                    <a href="{{ url_for('user.profile', user_id=user.id) }}"
+                       class="btn btn-sm btn-outline-primary w-100">查看主页</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-heart-broken fa-3x text-muted mb-3 opacity-25"></i>
+        <p class="text-muted mb-3">暂无匹配结果，请先完善你的个人资料（爱好、习惯、目标）</p>
+        <a href="{{ url_for('user.edit_profile') }}" class="btn btn-primary">
+            <i class="fas fa-edit me-1"></i>完善资料
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}标签管理 - 管理后台{% endblock %}
+{% block page_title %}兴趣标签管理{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-bold bg-transparent">添加标签</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.hobbies') }}">
+                    <div class="mb-3">
+                        <label class="form-label">标签名称</label>
+                        <input type="text" name="name" class="form-control" required placeholder="如：音乐">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">分类</label>
+                        <input type="text" name="category" class="form-control" placeholder="如：艺术">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">图标（emoji）</label>
+                        <input type="text" name="icon" class="form-control" value="🎯">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">添加标签</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-bold bg-transparent">全部标签 ({{ hobbies|length }})</div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for h in hobbies %}
+                    <div class="d-flex align-items-center bg-light rounded px-2 py-1 gap-1">
+                        <span>{{ h.icon }} {{ h.name }}</span>
+                        {% if h.category %}<small class="text-muted">({{ h.category }})</small>{% endif %}
+                        <form method="POST" action="{{ url_for('admin.delete_hobby', hobby_id=h.id) }}"
+                              onsubmit="return confirm('删除标签 {{ h.name }}？')">
+                            <button class="btn btn-xs btn-link text-danger p-0 ms-1">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
